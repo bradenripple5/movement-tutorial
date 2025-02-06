@@ -1,0 +1,27 @@
+function init(self)
+	-- Get references to GUI nodes
+	self.dialog_box = gui.get_node("dialog_box")
+	self.dialog_text = gui.get_node("dialog_text")
+
+	-- Hide the dialog by default
+	gui.set_enabled(self.dialog_box, true)
+end
+-- 
+function show_dialog(self, message)
+	gui.set_text(self.dialog_text, message)  -- Set message text
+	gui.set_enabled(self.dialog_box, true)   -- Show dialog box
+end
+
+function hide_dialog(self)
+	gui.set_enabled(self.dialog_box, false)  -- Hide dialog box
+end
+
+function on_message(self, message_id, message, sender)
+	print("getting message id", message_id)
+		
+	if message_id == hash("show_dialog") then
+		show_dialog(self, message.message)  -- Call show_dialog with message content
+	elseif message_id == hash("hide_dialog") then
+		hide_dialog(self)
+	end
+end

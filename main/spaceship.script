@@ -1,0 +1,82 @@
+local device = sys.get_sys_info().system_name
+
+
+function init(self)
+	msg.post(".", "acquire_input_focus")  -- Enable input
+	self.touches = {}  -- Store active touches
+	self.dragging = false  -- Track dragging status
+	self.touch_id = nil  -- Store active drag touch ID
+	self.offset = vmath.vector3()  -- Store offset for dragging
+	self.input = vmath.vector3()
+	self.screen_center = vmath.vector3(540, 960, 0)  -- Adjust for screen resolution
+end
+
+function update(self, dt)
+	if vmath.length_sqr(self.input) > 1 then
+		self.input = vmath.normalize(self.input)
+	end
+
+	local movement = self.input * .3  -- Adjust speed
+	local p = go.get_position()
+	go.set_position(p + movement)
+
+	-- Reset input each frame for keyboard movement
+	self.input = vmath.vector3()
+end
+
+function on_input(self, action_id, action)
+	print(action, action_id, action.touch)
+
+	local pos = go.get_position()
+	local touch = nil
+
+	-- Determine touch input
+	if action_id == hash("mouse_button_left") and device ~= "Android" then
+		print("device does not equal android")
+		touch = action
+		touch.id = 0
+	elseif action.touch then
+		touch = action.touch[1]  -- Get the first touch input
+	end
+
+	-- Handle touch input if it exists
+	if touch then
+		print(touch.id, " = touch.id")
+
+		if touch.pressed then
+			if is_touch_inside(pos, touch.x, touch.y) then
+				self.dragging = true
+				self.touch_id = touch.id
+				self.offset = vmath.vector3(touch.x, touch.y, 0) - pos
+			else
+				self.touches[touch.id] = { x = touch.x, y = touch.y }
+			end
+
+		elseif touch.released then
+			self.touches[touch.id] = nil
+			if touch.id == self.touch_id then
+				self.dragging = false
+				self.touch_id = nil
+			end
+
+		elseif self.dragging and touch.id == self.touch_id then
+			go.set_position(vmath.vector3(touch.x, touch.y, 0) - self.offset)
+		end
+	end
+
+	-- Handle action-based scaling
+	if action.released then
+		go.set_scale(1)
+	elseif action.pressed then
+		go.set_scale(2)
+	end
+end
+
+
+
+
+function is_touch_inside(obj_pos, touch_x, touch_y)
+	local size = 64  -- Adjust size of the object
+	return touch_x > obj_pos.x - size and touch_x < obj_pos.x + size and
+	touch_y > obj_pos.y - size and touch_y < obj_pos.y + size
+end
