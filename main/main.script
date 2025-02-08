@@ -1,10 +1,17 @@
 function init(self)
-	-- Get references to GUI nodes
-	self.dialog_box = gui.get_node("dialog_box")
-	self.dialog_text = gui.get_node("dialog_text")
+	print("main.script")
 
-	-- Hide the dialog by default
-	gui.set_enabled(self.dialog_box, true)
+	self.num_spaceships = 5  -- Adjust number of objects
+	self.spacing = 75  -- Space between objects
+
+	for i = 0, self.num_spaceships - 1 do
+		print(i, "iteration  in for loop of init of main script")
+		local pos = vmath.vector3(540, 500 - (i * self.spacing), .5)  -- Column alignment
+		local my_params = { speed = 5, color = "red", target = vmath.vector3(300, 400, 0),nil,nil,.5 }
+		
+		factory.create("spaceship_factory#spaceship_factory", pos, nil, nil, .5)
+	end
+	
 end
 -- 
 function show_dialog(self, message)
